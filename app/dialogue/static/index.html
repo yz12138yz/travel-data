@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>航旅智服 · 智能出行客服</title>
+  <style>
+    :root {
+      --accent: #22d3ee;
+      --accent-2: #60a5fa;
+      --accent-grad: linear-gradient(135deg, #22d3ee 0%, #60a5fa 100%);
+      --ink: #eaf0ff;
+      --muted: #93a0b8;
+      --glass: rgba(255, 255, 255, 0.06);
+      --glass-strong: rgba(255, 255, 255, 0.10);
+      --stroke: rgba(255, 255, 255, 0.12);
+      --user-grad: linear-gradient(135deg, #22d3ee, #3b82f6);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background: #0b1020;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ---- 极光背景 ---- */
+    .aurora { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+    .aurora span { position: absolute; border-radius: 50%; filter: blur(80px); opacity: .55; }
+    .aurora span:nth-child(1) { width: 520px; height: 520px; left: -120px; top: -120px;
+      background: radial-gradient(circle, rgba(34,211,238,.55), transparent 70%); animation: drift 18s ease-in-out infinite; }
+    .aurora span:nth-child(2) { width: 620px; height: 620px; right: -160px; top: 20%;
+      background: radial-gradient(circle, rgba(99,102,241,.5), transparent 70%); animation: drift 24s ease-in-out infinite reverse; }
+    .aurora span:nth-child(3) { width: 460px; height: 460px; left: 30%; bottom: -180px;
+      background: radial-gradient(circle, rgba(56,189,248,.42), transparent 70%); animation: drift 30s ease-in-out infinite; }
+    @keyframes drift {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(40px, 30px) scale(1.12); }
+    }
+
+    /* ---- 外壳 ---- */
+    .shell {
+      position: relative; z-index: 1; height: 100%; max-width: 1320px; margin: 0 auto;
+      padding: 24px; display: grid; grid-template-columns: 420px 1fr; gap: 24px;
+    }
+    .panel {
+      background: var(--glass); border: 1px solid var(--stroke); border-radius: 26px;
+      backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, .45);
+    }
+
+    /* ---- 左侧品牌区 ---- */
+    .hero { padding: 40px 38px; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+    .hero::after {
+      content: ""; position: absolute; right: -60px; top: -60px; width: 220px; height: 220px;
+      background: radial-gradient(circle, rgba(34,211,238,.28), transparent 70%); border-radius: 50%;
+    }
+    .hero-brand { display: flex; align-items: center; gap: 13px; }
+    .hero-logo {
+      width: 46px; height: 46px; border-radius: 14px; background: var(--accent-grad);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 10px 26px rgba(34,211,238,.4);
+    }
+    .hero-logo svg { width: 26px; height: 26px; }
+    .hero-brand .name { font-size: 17px; font-weight: 700; letter-spacing: 1px; }
+    .hero-brand .tag { font-size: 11px; color: var(--muted); letter-spacing: 2px; margin-top: 2px; }
+
+    .hero-title { margin-top: 44px; font-size: 40px; line-height: 1.22; font-weight: 800; letter-spacing: 1px; }
+    .hero-title .grad {
+      background: var(--accent-grad); -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-sub { margin-top: 16px; color: var(--muted); font-size: 14px; line-height: 1.8; }
+
+    .hero-features { margin-top: 34px; list-style: none; display: grid; gap: 16px; }
+    .hero-features li { display: flex; gap: 12px; align-items: flex-start; }
+    .hero-features .ic {
+      width: 34px; height: 34px; border-radius: 10px; flex: none;
+      background: var(--glass-strong); border: 1px solid var(--stroke);
+      display: flex; align-items: center; justify-content: center; font-size: 16px;
+    }
+    .hero-features b { font-size: 13.5px; font-weight: 600; display: block; }
+    .hero-features span { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+    .hero-dest { margin-top: 34px; }
+    .hero-dest .cap { font-size: 11px; color: var(--muted); letter-spacing: 2px; margin-bottom: 12px; }
+    .hero-dest .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .hero-dest button {
+      border: 1px solid var(--stroke); background: var(--glass-strong); color: var(--ink);
+      border-radius: 14px; padding: 14px 6px; cursor: pointer; transition: all .2s ease;
+      font-family: inherit; font-size: 13px;
+    }
+    .hero-dest button:hover { border-color: var(--accent); transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(34,211,238,.22); }
+    .hero-dest button .em { display: block; font-size: 22px; margin-bottom: 6px; }
+
+    .hero-stats { margin-top: auto; padding-top: 30px; display: flex; gap: 26px; }
+    .hero-stats div { text-align: left; }
+    .hero-stats b { font-size: 22px; font-weight: 800; background: var(--accent-grad);
+                    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero-stats span { font-size: 11px; color: var(--muted); display: block; margin-top: 3px; }
+
+    /* ---- 右侧对话区 ---- */
+    .chat { display: flex; flex-direction: column; overflow: hidden; }
+    .chat-head {
+      padding: 20px 24px; border-bottom: 1px solid var(--stroke);
+      display: flex; align-items: center; gap: 13px;
+    }
+    .cs-avatar { position: relative; width: 42px; height: 42px; border-radius: 50%;
+      background: var(--accent-grad); display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 700; box-shadow: 0 8px 20px rgba(34,211,238,.35); }
+    .cs-avatar::after { content: ""; position: absolute; right: 0; bottom: 0; width: 11px; height: 11px;
+      border-radius: 50%; background: #22c55e; border: 2px solid #141b30; }
+    .cs-meta b { font-size: 15px; font-weight: 650; display: block; }
+    .cs-meta span { font-size: 11.5px; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+    .cs-meta span i { width: 6px; height: 6px; border-radius: 50%; background: #22c55e; display: inline-block; }
+    .chat-head .spacer { flex: 1; }
+    .ghost {
+      background: var(--glass-strong); color: var(--ink); border: 1px solid var(--stroke);
+      border-radius: 11px; padding: 9px 14px; font-size: 12.5px; cursor: pointer; font-family: inherit;
+      transition: all .18s ease; white-space: nowrap;
+    }
+    .ghost:hover { border-color: var(--accent); color: var(--accent); }
+    .ghost.on { background: rgba(34,211,238,.14); color: var(--accent); border-color: rgba(34,211,238,.4); }
+
+    .statebar { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px 24px;
+      border-bottom: 1px solid var(--stroke); font-size: 11.5px; color: var(--muted); }
+    .statebar .pill { background: var(--glass-strong); border: 1px solid var(--stroke);
+      border-radius: 999px; padding: 4px 12px; white-space: nowrap; }
+    .statebar .pill b { color: var(--accent); font-weight: 600; }
+
+    .chat-body { flex: 1; overflow-y: auto; padding: 26px 26px 16px; scroll-behavior: smooth; }
+
+    .welcome { text-align: center; padding: 26px 6px 10px; animation: fade .5s ease; }
+    .welcome .badge {
+      display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--accent);
+      background: rgba(34,211,238,.12); border: 1px solid rgba(34,211,238,.3);
+      padding: 5px 13px; border-radius: 999px; letter-spacing: 1px;
+    }
+    .welcome h3 { margin-top: 16px; font-size: 22px; font-weight: 700; }
+    .welcome p { margin-top: 8px; font-size: 13px; color: var(--muted); }
+    .examples { margin-top: 24px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+    .examples button {
+      background: var(--glass-strong); border: 1px solid var(--stroke); color: var(--ink);
+      border-radius: 999px; padding: 9px 16px; font-size: 12.5px; cursor: pointer; font-family: inherit;
+      transition: all .18s ease;
+    }
+    .examples button:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+
+    .msg { display: flex; gap: 11px; margin-bottom: 20px; animation: fade .3s ease; }
+    .msg.user { flex-direction: row-reverse; }
+    .avatar { width: 36px; height: 36px; border-radius: 12px; flex: none; font-size: 14px;
+      display: flex; align-items: center; justify-content: center; }
+    .msg.ai .avatar { background: var(--accent-grad); color: #04101f; font-weight: 700; }
+    .msg.user .avatar { background: #2b3654; color: #cbd5f0; }
+    .bubble { max-width: 72%; padding: 12px 16px; border-radius: 15px; line-height: 1.7;
+      white-space: pre-wrap; word-break: break-word; font-size: 14px; }
+    .msg.ai .bubble { background: var(--glass-strong); border: 1px solid var(--stroke); border-top-left-radius: 4px; }
+    .msg.user .bubble { background: var(--user-grad); color: #04101f; font-weight: 500;
+      border-top-right-radius: 4px; box-shadow: 0 8px 24px rgba(34,211,238,.25); }
+    .msg .meta { font-size: 11px; color: var(--muted); margin-top: 7px; }
+    .tag { display: inline-block; font-size: 10.5px; padding: 2px 8px; border-radius: 999px;
+      background: rgba(34,211,238,.15); color: var(--accent); border: 1px solid rgba(34,211,238,.25); }
+
+    .typing span { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #64708c;
+      margin: 0 2px; animation: blink 1.2s infinite; }
+    .typing span:nth-child(2) { animation-delay: .2s; }
+    .typing span:nth-child(3) { animation-delay: .4s; }
+
+    .composer { padding: 14px 24px 20px; }
+    .composer-box { display: flex; gap: 10px; align-items: flex-end;
+      background: var(--glass-strong); border: 1px solid var(--stroke); border-radius: 18px; padding: 8px 8px 8px 18px; }
+    .composer-box:focus-within { border-color: rgba(34,211,238,.5); }
+    .composer textarea { flex: 1; border: none; outline: none; resize: none; background: transparent;
+      color: var(--ink); font-family: inherit; font-size: 14px; line-height: 1.5; padding: 8px 0; max-height: 120px; }
+    .composer textarea::placeholder { color: #5d6a85; }
+    .send-btn { width: 40px; height: 40px; border: none; border-radius: 12px; background: var(--accent-grad);
+      cursor: pointer; flex: none; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 20px rgba(34,211,238,.35); transition: transform .15s ease, opacity .15s ease; }
+    .send-btn:disabled { opacity: .35; cursor: not-allowed; box-shadow: none; }
+    .send-btn:not(:disabled):hover { transform: translateY(-1px); }
+    .send-btn svg { width: 18px; height: 18px; }
+
+    @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    @keyframes blink { 0%,80%,100% { opacity: .25; } 40% { opacity: 1; } }
+
+    @media (max-width: 960px) {
+      body { overflow: auto; }
+      .shell { grid-template-columns: 1fr; padding: 12px; gap: 12px; height: auto; min-height: 100%; }
+      .hero { padding: 28px 24px; }
+      .hero-title { font-size: 30px; margin-top: 28px; }
+      .hero-dest .grid { grid-template-columns: repeat(4, 1fr); }
+      .chat { min-height: 640px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="aurora"><span></span><span></span><span></span></div>
+
+  <div class="shell">
+    <!-- 左侧品牌区 -->
+    <aside class="panel hero">
+      <div class="hero-brand">
+        <div class="hero-logo">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M3 17l4 3 6-13 8 4-6 13-4-3-1.5-4L3 17z" fill="#04101f"/></svg>
+        </div>
+        <div>
+          <div class="name">航旅智服</div>
+          <div class="tag">TRAVEL AI SERVICE</div>
+        </div>
+      </div>
+
+      <h2 class="hero-title">让每一次出行<br><span class="grad">都更省心</span></h2>
+      <p class="hero-sub">一站式出行智能客服，覆盖酒店、景区、交通票务、接送、订单与售后，7×24 小时随时在线。</p>
+
+      <ul class="hero-features">
+        <li><div class="ic">🧭</div><div><b>秒懂意图</b><span>自然语言理解，精准识别你的需求</span></div></li>
+        <li><div class="ic">🎫</div><div><b>全品类覆盖</b><span>酒店 · 景区 · 机票 · 火车 · 接送</span></div></li>
+        <li><div class="ic">🛎️</div><div><b>多轮引导</b><span>退款、工单一站式在线办结</span></div></li>
+        <li><div class="ic">🛡️</div><div><b>会话可追溯</b><span>状态持久化，随时恢复对话</span></div></li>
+      </ul>
+
+      <div class="hero-dest">
+        <div class="cap">热门目的地</div>
+        <div class="grid">
+          <button data-q="北京有哪些五星酒店"><span class="em">🏯</span>北京</button>
+          <button data-q="上海有哪些酒店"><span class="em">🌆</span>上海</button>
+          <button data-q="南京有哪些酒店"><span class="em">🏛️</span>南京</button>
+          <button data-q="杭州有哪些酒店"><span class="em">🌊</span>杭州</button>
+        </div>
+      </div>
+
+      <div class="hero-stats">
+        <div><b>6</b><span>大出行品类</span></div>
+        <div><b>43</b><span>张业务数据表</span></div>
+        <div><b>7×24</b><span>智能在线</span></div>
+      </div>
+    </aside>
+
+    <!-- 右侧对话区 -->
+    <section class="panel chat">
+      <header class="chat-head">
+        <div class="cs-avatar">旅</div>
+        <div class="cs-meta">
+          <b>小旅 · 智能客服</b>
+          <span><i></i>在线 · 平均秒级响应</span>
+        </div>
+        <div class="spacer"></div>
+        <button class="ghost" id="btn-stream">流式输出</button>
+        <button class="ghost" id="btn-new">＋ 新建会话</button>
+      </header>
+
+      <div class="statebar">
+        <span class="pill">状态：<b id="st-task">空闲</b></span>
+        <span class="pill">会话：<b id="st-session">未创建</b></span>
+        <span class="pill" id="st-slots" style="display:none"></span>
+      </div>
+
+      <main class="chat-body" id="chat"></main>
+
+      <footer class="composer">
+        <div class="composer-box">
+          <textarea id="input" rows="1" placeholder="输入您的问题，例如：三亚有哪些五星酒店…"></textarea>
+          <button class="send-btn" id="btn-send" disabled title="发送">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M3 11.5 21 3l-8.5 18-2.2-7.3L3 11.5z" fill="#04101f"/></svg>
+          </button>
+        </div>
+      </footer>
+    </section>
+  </div>
+
+  <script>
+    const EXAMPLES = [
+      '北京有哪些五星酒店',
+      '帮我查下订单 ORD0000000001',
+      '我的订单 ORD0000000001 具体哪天入住',
+      '火车票退票手续费怎么收',
+      '我要退款',
+      '我要投诉',
+    ];
+    const TASK_LABELS = { order_status:'订单状态查询', trip_info:'出行信息查询', refund:'退款申请', ticket:'工单提交' };
+    const SLOT_LABELS = { order_no:'订单号', refund_reason:'退款原因', refund_type:'退款类型', ticket_type:'工单类型', problem_desc:'问题描述', target:'订单号/日期' };
+    const INTENT_LABELS = {
+      order_status:'订单查询', trip_info:'出行信息', refund:'退款申请', ticket:'工单提交',
+      query_order_status:'订单查询', query_trip_info:'出行信息', apply_refund:'退款申请', submit_ticket:'工单提交',
+      product_consult:'产品咨询', knowledge:'政策咨询', greet:'问候', thanks:'感谢', chitchat:'闲聊', clarify:'澄清',
+    };
+
+    let sessionId = null;
+    let stream = false;
+
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('input');
+    const sendBtn = document.getElementById('btn-send');
+    const btnStream = document.getElementById('btn-stream');
+    const btnNew = document.getElementById('btn-new');
+    const stTask = document.getElementById('st-task');
+    const stSession = document.getElementById('st-session');
+    const stSlots = document.getElementById('st-slots');
+
+    function welcome() {
+      chat.innerHTML = `
+        <div class="welcome">
+          <div class="badge">✦ 智能出行助手已就绪</div>
+          <h3>您好，我是小旅</h3>
+          <p>试着问我酒店、景区、机票火车票，或直接发起退款、工单</p>
+          <div class="examples">${EXAMPLES.map(e => `<button>${e}</button>`).join('')}</div>
+        </div>`;
+      chat.querySelectorAll('.examples button').forEach(b => b.onclick = () => ask(b.textContent));
+    }
+
+    function addMsg(role, text, tag) {
+      const wrap = document.createElement('div');
+      wrap.className = 'msg ' + role;
+      const avatar = document.createElement('div');
+      avatar.className = 'avatar';
+      avatar.textContent = role === 'user' ? '我' : '旅';
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      bubble.textContent = text;
+      if (tag) {
+        const m = document.createElement('div');
+        m.className = 'meta';
+        m.innerHTML = `<span class="tag">${tag}</span>`;
+        bubble.appendChild(m);
+      }
+      wrap.appendChild(avatar);
+      wrap.appendChild(bubble);
+      chat.appendChild(wrap);
+      chat.scrollTop = chat.scrollHeight;
+      return bubble;
+    }
+
+    function typingBubble() {
+      const wrap = document.createElement('div');
+      wrap.className = 'msg ai';
+      wrap.innerHTML = `<div class="avatar">旅</div><div class="bubble typing"><span></span><span></span><span></span></div>`;
+      chat.appendChild(wrap);
+      chat.scrollTop = chat.scrollHeight;
+      return wrap;
+    }
+
+    function renderState(s) {
+      if (!s) {
+        stTask.textContent = '空闲';
+        stSession.textContent = '未创建';
+        stSlots.style.display = 'none';
+        return;
+      }
+      stSession.textContent = (s.sessionId || '').slice(-8);
+      if (s.currentTask) {
+        const t = TASK_LABELS[s.currentTask] || s.currentTask;
+        const step = s.taskStep ? (SLOT_LABELS[s.taskStep] || s.taskStep) : '';
+        stTask.textContent = t + (step ? ' · 待填' + step : '');
+      } else {
+        stTask.textContent = '空闲';
+      }
+      const keys = Object.keys(s.slots || {});
+      if (keys.length) {
+        stSlots.style.display = '';
+        stSlots.textContent = '已收集：' + keys.map(k => (SLOT_LABELS[k] || k) + '=' + s.slots[k]).join('，');
+      } else {
+        stSlots.style.display = 'none';
+      }
+    }
+
+    async function newSession() {
+      const r = await fetch('/api/dialogue/sessions', { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' });
+      const d = await r.json();
+      sessionId = d.sessionId;
+      renderState(d.state);
+      welcome();
+      input.focus();
+    }
+
+    async function ask(text) {
+      if (!sessionId) await newSession();
+      addMsg('user', text);
+      input.value = '';
+      syncSendBtn();
+
+      const bubble = typingBubble();
+
+      if (stream) {
+        const bb = bubble.querySelector('.bubble');
+        bb.textContent = '';
+        bb.classList.remove('typing');
+        const r = await fetch(`/api/dialogue/sessions/${sessionId}/messages/stream`, {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ content: text, messageType: 'text' })
+        });
+        const reader = r.body.getReader();
+        const dec = new TextDecoder(); let buf = '';
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buf += dec.decode(value, { stream:true });
+          const parts = buf.split('\n\n'); buf = parts.pop();
+          for (const p of parts) {
+            const line = p.trim();
+            if (!line.startsWith('data:')) continue;
+            const payload = line.slice(5).trim();
+            if (payload === '[DONE]') continue;
+            try { bb.textContent += JSON.parse(payload).delta; } catch(e){}
+            chat.scrollTop = chat.scrollHeight;
+          }
+        }
+        const d = await (await fetch(`/api/dialogue/sessions/${sessionId}`)).json();
+        renderState(d.state);
+      } else {
+        const r = await fetch(`/api/dialogue/sessions/${sessionId}/messages`, {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ content: text, messageType: 'text' })
+        });
+        const d = await r.json();
+        bubble.remove();
+        addMsg('ai', d.reply.content, INTENT_LABELS[d.reply.intent]);
+        renderState(d.state);
+      }
+    }
+
+    function syncSendBtn() { sendBtn.disabled = !input.value.trim(); }
+
+    btnStream.onclick = () => { stream = !stream; btnStream.classList.toggle('on', stream); };
+    btnNew.onclick = newSession;
+    sendBtn.onclick = () => { const t = input.value.trim(); if (t) ask(t); };
+    document.querySelectorAll('.hero-dest button').forEach(b => b.onclick = () => ask(b.dataset.q));
+    input.addEventListener('input', () => { syncSendBtn(); input.style.height='auto'; input.style.height=Math.min(input.scrollHeight,120)+'px'; });
+    input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); const t = input.value.trim(); if (t) ask(t); } });
+
+    newSession();
+  </script>
+</body>
+</html>
